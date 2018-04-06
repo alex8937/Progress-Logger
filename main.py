@@ -1,5 +1,6 @@
 import Schedule
 
+
 def main():
  path_string = "./schedule.csv"
  schedule_obj = Schedule.Schedule(path_string)

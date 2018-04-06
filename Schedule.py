@@ -6,8 +6,7 @@ from math import ceil
 
 class Schedule:
 
- def __init__(self, _path_string, _magic_number = 1.8, _first_date_str = "2018-03-29", _valid_num_of_days = 1000, _times_of_pratice = 10):
-
+ def __init__(self, _path_string, _magic_number = 1.8, _first_date_str = "2000-01-01", _valid_num_of_days = 10000, _times_of_pratice = 10):
   self.path = _path_string
   self.magic_number = _magic_number
   self.first_date_str = _first_date_str
@@ -20,7 +19,7 @@ class Schedule:
   else:
    self.data = pd.read_csv(self.path)
    self.data = self.data.set_index(pd.DatetimeIndex(self.data['Date']))
-   print("Loaded" + "path_string")
+   print("Loaded " + self.path)
    self.data = Schedule.__pre_process_for_exists(self.data, self.first_date_str, self.valid_num_of_days)
    self.data_bak = pd.DataFrame.copy(self.data)
 
@@ -78,27 +77,47 @@ class Schedule:
   print(day.strftime('%Y-%m-%d'), 'added')
 
 
- def __get_problems():
+ def __set_problems():
   try:
-   adds = input("Input problems to add (separated by spaces): e.g. 234 or 3 13 23: \n").split()
-   adds = [int(add) for add in adds]
+   adds = input("Input problems to add (separated by spaces | 'q' or 'Enter' for Quit): e.g. 234 or 3 13 23: \n")
+   if adds == 'q' or adds == '':
+    return -1
+   adds = [int(add) for add in adds.split()]
   except ValueError:
    print("Sorry, I didn't understand that.")
-   return Schedule.__get_problems()
+   return Schedule.__set_problems()
   return adds
 
 
- def __get_date():
+ def __set_date():
   try:
-   day = input("Input date (Enter for today): e.g. 2018-04-03: \n")
+   day = input("Input date (Enter for today | 'q' for Quit): e.g. 2018-04-03 or 20180403: \n")
+   if day == "q":     
+    return -1
    if day == "":
     day = pd.to_datetime(date.today())
    else:
     day = pd.to_datetime(day, infer_datetime_format = True)
   except ValueError:
    print("Sorry, I didn't understand that.")
-   return Schedule.__get_date()
+   return Schedule.__set_date()
   return day
+
+
+ def __get_problems(self):
+  try:
+   day = input("Input date to show problems (Enter for today | 'q' for Quit): e.g. 2018-04-03 or 20180403: \n")   
+   if day == 'q':
+    return -1
+   if day == '':
+    day = date.today()
+   day = str(pd.to_datetime(day, format='%Y-%m-%d').date())
+   print('TO DO: {} ({})'.format(' '.join(map(str, self.data.loc[day, 'Todo'])), len(self.data.loc[day, 'Todo'])))
+   print('NEW: {} ({})'.format(' '.join(map(str, self.data.loc[day, 'Problems'])), len(self.data.loc[day, 'Problems']))) 
+   print('')
+  except (KeyError, ValueError) as error:
+   print("Sorry, I didn't understand that.")
+   return self.__get_problems()
 
 
  def __flatten(nums):
@@ -108,19 +127,31 @@ class Schedule:
   for num in nums:
    ans += Schedule.__flatten(num)
   return ans
-
-
+ 
+     
  def work_flow(self):
-  self.data = Schedule.__pre_process(self.data)
-  while True:
-   problems = Schedule.__get_problems()
-   day = Schedule.__get_date()
-   input_key = input("Enter to complete. If you made some mistakes, press anykey to re-enter \n")
-   if input_key == "":
+  quit_flag = False     
+  self.data = Schedule.__pre_process(self.data)   
+  get_flag = self.__get_problems() if Path(self.path).is_file() else 0
+  quit_flag = (get_flag == -1)   
+  while not quit_flag:
+   problems = Schedule.__set_problems()
+   if problems == -1:
+    quit_flag = True
     break
-  Schedule.__put(self.data, problems, day, self.magic_number, self.times_of_pratice)
-  self.data = Schedule.__post_process(self.data)
-  if Path(self.path).is_file():
-   self.data_bak = Schedule.__post_process(self.data_bak)
-   self.data_bak.to_csv(self.path + '.bak')
-  self.data.to_csv(self.path)
+   day = Schedule.__set_date()
+   if day == -1:
+    quit_flag = True       
+    break   
+   input_key = input("Enter 'q' or 'Enter' to complete. If you made some mistakes, press any other key to re-enter \n")
+   if input_key == "q" or input_key == "":
+    break
+  if not quit_flag:
+   Schedule.__put(self.data, problems, day, self.magic_number, self.times_of_pratice)
+   self.data = Schedule.__post_process(self.data)
+   if Path(self.path).is_file():
+    self.data_bak = Schedule.__post_process(self.data_bak)
+    self.data_bak.to_csv(self.path + '.bak')
+   self.data.to_csv(self.path)
+  else:
+   print('Command to quit...')
