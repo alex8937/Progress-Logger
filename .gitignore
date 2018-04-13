@@ -1,5 +1,6 @@
 *.csv
 *.bak
+*.spec
 __pycache__/
 build/
 dist/
