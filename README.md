@@ -6,6 +6,10 @@ Prerequisite:
 - Numpy 
 - Pandas
 
+ver 0.3
+1. Added executable file for Windows Uers
+2. The executable is built by pyinstaller and following: https://stackoverflow.com/questions/48629486/how-can-i-create-the-minimum-size-executable-with-pyinstaller 
+
 ver 0.2
 1. Added new features: query problems
 2. Added other minor features to quit the console
