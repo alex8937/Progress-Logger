@@ -85,7 +85,7 @@ class Schedule:
     return -1
    adds = [int(add) for add in adds.split()]
   except ValueError:
-   print("Sorry, I didn't understand that.")
+   print("Sorry, I didn't understand that.\n")
    return Schedule.__set_problems()
   return adds
 
@@ -100,7 +100,7 @@ class Schedule:
    else:
     day = pd.to_datetime(day, infer_datetime_format = True)
   except ValueError:
-   print("Sorry, I didn't understand that.")
+   print("Sorry, I didn't understand that.\n")
    return Schedule.__set_date()
   return day
 
@@ -117,7 +117,7 @@ class Schedule:
    print('NEW: {} ({})'.format(' '.join(map(str, self.data.loc[day, 'Problems'])), len(self.data.loc[day, 'Problems'])))
    print('')
   except (KeyError, ValueError) as error:
-   print("Sorry, I didn't understand that.")
+   print("Sorry, I didn't understand that.\n")
    return self.__get_problems()
 
 
@@ -131,10 +131,11 @@ class Schedule:
 
  def __get_title():
   try:
-   problem_id = input("Input problem id to show title ('s' for Skip | 'q' for Quit): e.g. 12: \n")
+   problem_id = input("Input problem id to show title (Enter or 's' for Skip | 'q' for Quit): e.g. 12: \n")
    if problem_id == 'q':
     return -1
-   elif problem_id == 's':
+   elif problem_id == 's' or problem_id == '':
+    print("Quit querying problem id...\n")
     return -2
    else:
     problem_id = int(problem_id)
@@ -145,11 +146,12 @@ class Schedule:
      if alg_json['stat']['question_id'] == problem_id:
       print('\"' + alg_json['stat']['question__title'] + '\"\n')
       return Schedule.__get_title()
+    raise KeyError      
   except ValueError:
-   print("Sorry, I didn't understand that.")
+   print("Sorry, I didn't understand that.\n")
    return Schedule.__get_title()
   except KeyError:
-   print("Oops... problem id not found.")
+   print("Oops... Such problem id not found.\n")
    return Schedule.__get_title()
 
  def work_flow(self):
@@ -158,8 +160,8 @@ class Schedule:
   get_flag = self.__get_problems() if Path(self.path).is_file() else 0
   quit_flag = (get_flag == -1)
   while not quit_flag:
-   quit_flag = Schedule.__get_title()
-   if quit_flag == -1:
+   if Schedule.__get_title() == -1:
+    quit_flag = True
     break
    problems = Schedule.__set_problems()
    if problems == -1:
